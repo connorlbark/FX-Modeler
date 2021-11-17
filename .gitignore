@@ -1,4 +1,6 @@
 data/
+trained_models/
+*.wav
 
 .DS_Store
 # Byte-compiled / optimized / DLL files
