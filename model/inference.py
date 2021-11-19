@@ -3,6 +3,7 @@ from posixpath import normpath
 import soundfile
 from tensorflow import keras
 import tensorflow as tf
+import losses
 
 # --------------------------- ARGUMENTS ---------------------------
 parser = argparse.ArgumentParser(description='Generate dataset.')
@@ -14,7 +15,9 @@ parser.add_argument('outpath', help='path to ouputted file with effect.')
 args = parser.parse_args()
 
 
-m = keras.models.load_model(args.modelpath)
+m = keras.models.load_model(args.modelpath, custom_objects={
+    "stft_loss": losses.stft_loss
+})
 
 in_audio = tf.io.read_file(args.inpath)
 in_audio, sample_rate = tf.audio.decode_wav(in_audio,
