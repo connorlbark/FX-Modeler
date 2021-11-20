@@ -24,9 +24,12 @@ def build_tcn_model():
     inputs = tf.keras.Input(shape=(None,2))
     #tcn = layers.Conv1D(16, 1, padding='causal', dilation_rate=1, activation='relu')(inputs)
     tcn = add_tcn_block(inputs, n_filters=32, kernel_size=4, dilations=[1,2,4,8])
-    tcn = add_tcn_block(tcn, n_filters=32, kernel_size=4, dilations=[1,10,100])
+    tcn = add_tcn_block(tcn, n_filters=32, kernel_size=5, dilations=[1,10,100])
+    tcn = add_tcn_block(tcn, n_filters=32, kernel_size=6, dilations=[1,3,9,27])
     tcn = add_tcn_block(tcn, n_filters=32, kernel_size=4, dilations=[1,2,4,8])
-    
+
     # tcn = add_tcn_block(tcn, 32, 4)
-    out = layers.Conv1D(2, 4, padding='causal', activation='tanh')(tcn)
+
+    # give the model quite a bit of context to make the final output with.
+    out = layers.Conv1D(2, 32, padding='causal', activation='tanh')(tcn)
     return Model(inputs=inputs, outputs=out)
