@@ -16,6 +16,42 @@ def _load_audio(nofx_path, fx_path):
     return nofx_audio, fx_audio
 
 
+def prepadded_batch(ds, batch_size, padding_values=None):
+    windowed = ds.window(batch_size)
+    if padding_values == None:
+        padding_values = 0.0
+    
+
+    
+    # def _pad(ds1, ds2):
+    #     vals = []
+        
+    #     for val in ds1:
+    #         vals.append(val)
+    #    # eager_values = list(ds.as_numpy_iterator())
+
+    #     return tf.keras.preprocessing.sequence.pad_sequences(
+    #             vals, padding='pre',
+    #             truncating='pre', value=padding_values
+    #         )
+
+    def _max_size_reduce_fn(state, val):
+        shape = tf.shape(val)
+        size = shape[-1]
+        
+        if state > size:
+            return state
+        return size
+    
+    largest_tensor = windowed.reduce(0, _max_size_reduce_fn )
+    
+    print(largest_tensor)
+    # uniform_size = windowed.map()
+    
+    # def _stack_reduce_fn(state, val):
+        
+    
+    # return uniform_size.reduce(None, _stack_reduce_fn)
 
 def _load_dataset_as_audio(ds, shuffle_buffer_size=1024, batch_size=1):
     # Randomly shuffle (file_path, label) dataset
@@ -26,6 +62,7 @@ def _load_dataset_as_audio(ds, shuffle_buffer_size=1024, batch_size=1):
     ds = ds.repeat()
     # batch
     ds = ds.batch(batch_size)
+    # ds = prepadded_batch(ds, 32)
     # Prefetch
     ds = ds.prefetch(buffer_size=AUTOTUNE)
     return ds
@@ -58,6 +95,8 @@ def _split_into_train_test(ds, ds_size, train_split=0.8, test_split=0.1, val_spl
     val_ds = ds.skip(train_size).skip(test_size)
 
     return train_ds, train_size, test_ds, test_size, val_ds, val_size
+
+
 
 def load_data_pipeline(dataset_path, fx_class):
     nofxpaths, fxclasspaths = _load_cleaned_dataset_label_mapping(dataset_path, fx_class)

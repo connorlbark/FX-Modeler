@@ -35,10 +35,8 @@ def stft_spectral_convergence(y_true_mag, y_pred_mag):
     # spectral representations for each signal
     return tf.norm(y_true_mag - y_pred_mag, ord='fro', axis=(-2,-1)) / tf.norm(y_true_mag, ord='fro', axis=(-2,-1))
 
-def stft_loss(y_true, y_pred):
-    frame_length=1024
-    frame_step=600
-    fft_length=1024
+def stft_loss(y_true, y_pred, frame_length=1024,frame_step=600,fft_length=1024):
+
     y_true_stft = tf.signal.stft(y_true, frame_length=frame_length, frame_step=frame_step, fft_length=fft_length, pad_end=True)
     y_pred_stft = tf.signal.stft(y_pred, frame_length=frame_length, frame_step=frame_step, fft_length=fft_length, pad_end=True)
 
@@ -53,3 +51,13 @@ def stft_loss(y_true, y_pred):
     log_mag = stft_log_spectral_magnitude(y_true_stft_abs, y_pred_stft_abs)
     convergence = stft_spectral_convergence(y_true, y_pred)
     return tf.reduce_mean(log_mag) + tf.reduce_mean(convergence)
+
+def multiwindow_stft_loss(y_true, y_pred, windows=[(128,48,128),(256,100,256),(512,215,512),(1028,433,1028)]):
+    length = tf.shape(y_true)[-1]
+
+    loss = stft_loss(y_true,y_pred, length, length, length)
+    
+    for (fl,fs,fftl) in windows:
+        loss += stft_loss(y_true, y_pred, fl,fs,fftl)
+
+    return loss / (len(windows)+1)

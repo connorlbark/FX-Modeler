@@ -16,7 +16,8 @@ args = parser.parse_args()
 
 
 m = keras.models.load_model(args.modelpath, custom_objects={
-    "stft_loss": losses.stft_loss
+    "stft_loss": losses.stft_loss,
+    "multiwindow_stft_loss": losses.multiwindow_stft_loss,
 })
 
 in_audio = tf.io.read_file(args.inpath)

@@ -3,7 +3,7 @@ from genericpath import exists
 from os import listdir, makedirs
 from os.path import isfile, isdir, join
 import soundfile as sf
-from shutil import copyfile
+from shutil import copyfile, copy
 
 def extract_instrument_name(dirname):
     #translate = {"Gitarre": "guitar", "Bass": "bass"}
@@ -40,9 +40,8 @@ def separate_into_effects(instrument_paths, valid_effects=None):
                 # if not a directory, not an effect dir
                 if not isdir(join(effectsdir, effect)) or effect == "":
                     continue
-                    
-                if (valid_effects == None or effect not in valid_effects) and (effect != 'NoFX'):
-                    print(valid_effects, effect)
+    
+                if (valid_effects != None and effect not in valid_effects) and (effect != 'NoFX'):
                     continue
 
                 effectdir = join(effectsdir, effect)
@@ -50,7 +49,7 @@ def separate_into_effects(instrument_paths, valid_effects=None):
                 effects[instrument][effect] = {}
                 for samplepath in [
                         join(effectdir, p) for p in listdir(effectdir) if isfile(join(effectdir, p))]:
-                    file_name = samplepath.split('/')[-1]
+                    file_name = samplepath.split('\\')[-1]
 
                     effect_num = file_name.split('-')[2]
 
@@ -72,12 +71,10 @@ def map_samples_to_output(samples_by_effects, output_dir):
             for effect_num in samples_by_effects[instrument][effect]:
                 effect_path = join(output_dir, effect + effect_num)
                 for samplepath in samples_by_effects[instrument][effect][effect_num]:
-
-                    name = '-'.join(samplepath.split('/')[-1].split('-')[0:2])
-
+                    name = '-'.join(samplepath.split('\\')[-1].split('-')[0:2])
                     cleaned_sample_routes.append(
                         (samplepath, effect_path, name))
-    
+
     return cleaned_sample_routes
 
 
@@ -87,7 +84,8 @@ def compute_sample_mapping(inputdir, outputdir, instruments, effects=None):
 def copy_wav(original_sample_path, output_sample_path):
     # data, samplerate = sf.read(original_sample_path)
     # sf.write(output_sample_path, data, samplerate)
-    copyfile(original_sample_path, output_sample_path)
+    #print(original_sample_path, output_sample_path)
+    copy(original_sample_path, output_sample_path)
 
 def copy_wav_as_chunks(original_sample_path, out_filedir, out_filename, n_samples_in_chunk):
     with sf.SoundFile(original_sample_path) as f:

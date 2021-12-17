@@ -1,4 +1,5 @@
 data/
+ds/
 trained_models/
 *.wav
 
